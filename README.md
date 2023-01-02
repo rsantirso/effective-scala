@@ -1,2 +1,2 @@
 # effective-scala
- Effective Programming in Scala
+Personal work following [Effective Programming in Scala from Coursera](https://www.coursera.org/learn/effective-scala)
