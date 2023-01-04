@@ -31,7 +31,10 @@ object Grade:
    * - `apply` to select an element at a specific index.
    */
   def median(grades: Seq[Grade]): Grade =
-    ???
+    val sortedGrades = grades.sortBy(g => g.ordinal)
+    val numberOfGrades : Int = sortedGrades.size
+    sortedGrades.apply(numberOfGrades/2)
+
 end Grade
 
 /**
