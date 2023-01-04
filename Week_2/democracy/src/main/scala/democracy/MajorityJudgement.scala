@@ -76,7 +76,7 @@ case class Election(description: String, candidates: Set[Candidate]):
     // into a single sequence containing the grades assigned to each
     // candidate by the voters.
     val allGrades: Seq[(Candidate, Grade)] =
-      ballots.flatMap(b => b.grades)
+      ballots.flatMap(_.grades)
 
     // Second step: use the operation `groupMap` to transform the
     // collection of pairs of `(Candidate, Grade)` into a `Map`
@@ -113,8 +113,8 @@ case class Election(description: String, candidates: Set[Candidate]):
       val bestMedianGrade: Grade =
         gradesPerCandidate
           .values
-          .filter(grades => grades.nonEmpty)
-          .map(grades => Grade.median(grades))
+          .filter(_.nonEmpty)
+          .map(Grade.median)
           .maxBy(_.ordinal)
 
       // Use the operation `filter` to select all the candidates that got the
