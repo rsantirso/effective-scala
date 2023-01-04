@@ -76,14 +76,14 @@ case class Election(description: String, candidates: Set[Candidate]):
     // into a single sequence containing the grades assigned to each
     // candidate by the voters.
     val allGrades: Seq[(Candidate, Grade)] =
-      ???
+      ballots.flatMap(b => b.grades)
 
     // Second step: use the operation `groupMap` to transform the
     // collection of pairs of `(Candidate, Grade)` into a `Map`
     // containing all the grades that were assigned to a given
     // `Candidate`.
     val gradesPerCandidate: Map[Candidate, Seq[Grade]] =
-      ???
+      allGrades.groupMap(_._1)(_._2)
 
     findWinner(gradesPerCandidate)
   end elect
@@ -111,18 +111,22 @@ case class Election(description: String, candidates: Set[Candidate]):
       // of grades, and finally use the operation `maxBy` to find the highest
       // median grade.
       val bestMedianGrade: Grade =
-        ???
+        gradesPerCandidate
+          .values
+          .filter(grades => grades.nonEmpty)
+          .map(grades => Grade.median(grades))
+          .maxBy(_.ordinal)
 
       // Use the operation `filter` to select all the candidates that got the
       // same best median grade (as the case may be)
       val bestCandidates: Map[Candidate, Seq[Grade]] =
-        ???
+        gradesPerCandidate.filter((candidate, grades) => grades.contains(bestMedianGrade))
 
       // In case only one candidate got the best median grade, it’s the winner!
       if bestCandidates.size == 1 then
         // Use the operation `head` to retrieve the only element
         // of the collection `bestCandidates`
-        ???
+        bestCandidates.head._1
       else
         // Otherwise, there is a tie between several candidates. The tie-breaking
         // algorithm is the following:
@@ -136,11 +140,13 @@ case class Election(description: String, candidates: Set[Candidate]):
         // And use the operation `diff` to remove one `bestMedianGrade` from the
         // grades assigned to the candidates.
         val bestCandidatesMinusOneMedianGrade: Map[Candidate, Seq[Grade]] =
-          ???
-  
+          bestCandidates.map((candidate, grades) => (candidate, grades diff Seq(bestMedianGrade)))
+
+
         // Finally, call `findWinner` on the reduced collection of candidates,
         // `bestCandidatesMinusOneMedianGrade`.
-        ???
+        findWinner(bestCandidatesMinusOneMedianGrade)
+
   end findWinner
 
 end Election
