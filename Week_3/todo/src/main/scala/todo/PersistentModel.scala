@@ -98,31 +98,51 @@ object PersistentModel extends Model:
    */
 
   def create(task: Task): Id =
-    ???
+    val id = loadId().next
+    val tasksIncludingNewOne = loadTasks().tasks.toMap.updated(id, task)
+    saveId(id)
+    saveTasks(Tasks(tasksIncludingNewOne))
+    id
 
   def read(id: Id): Option[Task] =
-    ???
+    loadTasks().tasks
+      .find((tid, task) => tid.equals(id))
+      .map((tid, task) => task)
 
   def update(id: Id)(f: Task => Task): Option[Task] =
-    ???
+    val updatedTasks = loadTasks().tasks
+      .toMap
+      .updatedWith(id)(opt => opt.map(f))
+    saveTasks(Tasks(updatedTasks))
+    updatedTasks.get(id)
 
   def delete(id: Id): Boolean =
-    ???
+    val currentTasks = loadTasks().tasks.toMap
+    val updatedTasks = currentTasks.removed(id)
+    saveTasks(Tasks(updatedTasks))
+    if currentTasks.size != updatedTasks.size then true
+    else false
 
   def tasks: Tasks =
-    ???
+    loadTasks()
 
   def tasks(tag: Tag): Tasks =
-    ???
+    Tasks(tasks
+      .toList
+      .filter((id, task) => task.tags.contains(tag)))
 
   def complete(id: Id): Option[Task] =
-    ???
+    update(id)(Task => Task.complete)
 
   def tags: Tags =
-    ???
+    Tags(tasks
+      .toList
+      .flatMap((id, task) => task.tags)
+      .distinct)
 
   /**
   * Delete the tasks and id files if they exist.
   */
   def clear(): Unit =
-    ???
+    Files.deleteIfExists(tasksPath)
+    Files.deleteIfExists(idPath)
