@@ -275,7 +275,9 @@ trait PersonCodecs:
     *       `transform`.
     */
   given Decoder[Person] =
-    ???
+    val nameDecoder = Decoder.field[String]("name")
+    val ageDecoder = Decoder.field[Int]("age")
+    nameDecoder.zip(ageDecoder).transform(user => new Person(user._1, user._2))
 
 end PersonCodecs
 
