@@ -248,7 +248,11 @@ trait DecoderInstances:
     * the supplied `name` using the given `decoder`.
     */
   def field[A](name: String)(using decoder: Decoder[A]): Decoder[A] =
-    ???
+    Decoder.fromFunction(data =>
+      data match
+        case jsonObject: Json.Obj => jsonObject.fields.get(name).flatMap(value => decoder.decode(value))
+        case default => None
+    )
 
 end DecoderInstances
 
