@@ -190,11 +190,12 @@ trait DecoderInstances:
 
   /** A decoder for `Int` values. Hint: use the `isValidInt` method of `BigDecimal`. */
   given intDecoder: Decoder[Int] =
-    Decoder.fromFunction (jsonInt =>
-      jsonInt match
+    Decoder.fromFunction ( jsonValue =>
+      jsonValue match
         case num: Json.Num =>
           if num.value.isValidInt then Some(num.value.intValue)
           else Option.empty
+        case _ => Option.empty
     )
 
   /** A decoder for `String` values */
@@ -240,7 +241,7 @@ trait DecoderInstances:
     //   - otherwise, return a failure (`None`)
     Decoder.fromFunction {
       case arr: Json.Arr => decodeAllItems(arr.items)
-      case default => None
+      case _ => None
     }
 
   /**
@@ -251,7 +252,7 @@ trait DecoderInstances:
     Decoder.fromFunction(data =>
       data match
         case jsonObject: Json.Obj => jsonObject.fields.get(name).flatMap(value => decoder.decode(value))
-        case default => None
+        case _ => None
     )
 
 end DecoderInstances
@@ -287,7 +288,6 @@ object Contacts extends ContactsCodecs
 
 trait ContactsCodecs:
 
-  // TODO Define the encoder and the decoder for `Contacts`
   // The JSON representation of a value of type `Contacts` should be
   // a JSON object with a single field named “people” containing an
   // array of values of type `Person` (reuse the `Person` codecs)
