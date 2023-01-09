@@ -214,14 +214,20 @@ trait DecoderInstances:
     // Decode the provided `item` with the provided `decoder`. If this succeeds,
     // return the decoded item **prepended** to the `previouslyDecodedItems`.
     def decodeAndPrepend(item: Json, previouslyDecodedItems: List[A]): Option[List[A]] =
-      ???
+      decoder.decode(item) match
+        case Some(value) => Some(previouslyDecodedItems.prepended(value))
+        case None => None
+
     // Decode the provided `item` only if the previous items were successfully decoded.
     // In case `maybePreviouslyDecodedItems` is `None` (which means that at least
     // one of the previous items failed to be decoded), return `None`.
     // Otherwise, decode the provided `item` and prepend it to the previously
     // decoded items (use the method `decodeAndPrepend`).
     def processItem(item: Json, maybePreviouslyDecodedItems: Option[List[A]]): Option[List[A]] =
-      ???
+      maybePreviouslyDecodedItems match
+        case Some(value) => decodeAndPrepend(item, value)
+        case None => None
+
     // Decodes all the provided JSON items. Fails if any item fails to
     // be decoded.
     // Iterates over the items, and tries to decode each item if the
@@ -233,7 +239,8 @@ trait DecoderInstances:
     //   - if it is the case, call `decodeAllItems` on the array items,
     //   - otherwise, return a failure (`None`)
     Decoder.fromFunction {
-      ???
+      case arr: Json.Arr => decodeAllItems(arr.items)
+      case default => None
     }
 
   /**
@@ -298,8 +305,8 @@ import scala.runtime.Nothing$
   val maybeJsonObj    = parseJson(""" { "name": "Alice", "age": 42 } """)
   val maybeJsonObj2   = parseJson(""" { "name": "Alice", "age": "42" } """)
   // Uncomment the following lines as you progress in the assignment
-  // println(maybeJsonString.flatMap(_.decodeAs[Int]))
-  // println(maybeJsonString.flatMap(_.decodeAs[String]))
+   println(maybeJsonString.flatMap(_.decodeAs[Int]))
+   println(maybeJsonString.flatMap(_.decodeAs[String]))
   // println(maybeJsonObj.flatMap(_.decodeAs[Person]))
   // println(maybeJsonObj2.flatMap(_.decodeAs[Person]))
   // println(renderJson(Person("Bob", 66)))
