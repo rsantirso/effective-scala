@@ -70,7 +70,8 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     */
   def flatMap[B](f: A => WikiResult[B])(using ExecutionContext): WikiResult[B] = 
     val futureB: Future[Either[Seq[WikiError], B]] = value.flatMap {
-      ???
+      case Left(errors) => Future.successful[Either[Seq[WikiError], B]](Left(errors))
+      case Right(wikiValue) => f(wikiValue).value
     }
     WikiResult(futureB)
 
