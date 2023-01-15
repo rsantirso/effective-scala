@@ -69,7 +69,7 @@ case class WikiResult[A](value: Future[Either[Seq[WikiError], A]]):
     */
   def flatMap[B](f: A => WikiResult[B])(using ExecutionContext): WikiResult[B] = 
     val futureB: Future[Either[Seq[WikiError], B]] = value.flatMap {
-      case Left(errors) => Future.successful[Either[Seq[WikiError], B]](Left(errors))
+      case Left(errors) => Future.successful(Left(errors))
       case Right(wikiValue) => f(wikiValue).value
     }
     WikiResult(futureB)
@@ -150,6 +150,8 @@ object WikiResult:
     * lecture “Manipulating Validated Values”.
     */
   def traverse[A, B](as: Seq[A])(f: A => WikiResult[B])(using ExecutionContext): WikiResult[Seq[B]] =
-    ???
+    as.map(f).foldLeft(WikiResult.successful(Seq.empty[B]))((accumulated, current) => {
+      accumulated.zip(current.map(Seq(_))).map(e => e._1 ++ e._2)
+    })
 
 end WikiResult
