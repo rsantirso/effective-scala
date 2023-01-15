@@ -142,5 +142,19 @@ final class Wikigraph(client: Wikipedia):
     *       `breadthFirstSearch`
     */
   def distanceMatrix(titles: List[String], maxDepth: Int = 50): WikiResult[Seq[(String, String, Option[Int])]] =
-    ???
+    val allArticlesPairs = for
+      sourceArticle <- titles
+      distArticle <- titles if sourceArticle != distArticle
+    yield (sourceArticle, distArticle)
+
+    WikiResult.traverse(allArticlesPairs){
+      (sourceTitle, distTitle) =>
+        client.searchId(sourceTitle)
+          .zip(client.searchId(distTitle))
+          .flatMap {
+            (sourceId, distId) =>
+              breadthFirstSearch(sourceId, distId, maxDepth)
+                .flatMap(distance => WikiResult.successful(sourceTitle, distTitle, distance))
+        }
+    }
 end Wikigraph
