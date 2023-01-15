@@ -26,7 +26,10 @@ final class Wikigraph(client: Wikipedia):
     * return a `Set`. Remember that you can use `.toSeq` and `.toSet`.
     */
   def namedLinks(of: ArticleId): WikiResult[Set[String]] =
-    ???
+    client.linksFrom(of)
+      .flatMap(articleIds =>
+        WikiResult.traverse[ArticleId, String](articleIds.toSeq)(client.nameOfArticle)
+                  .map(r => r.toSet))
 
   /**
     * Computes the distance between two pages using breadth first search.
