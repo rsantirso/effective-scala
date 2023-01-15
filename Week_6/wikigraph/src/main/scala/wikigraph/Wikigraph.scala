@@ -154,8 +154,11 @@ final class Wikigraph(client: Wikipedia):
           .zip(client.searchId(distTitle))
           .flatMap {
             (sourceId, distId) =>
-              breadthFirstSearch(sourceId, distId, maxDepth)
-                .flatMap(distance => WikiResult.successful(sourceTitle, distTitle, distance))
+              for
+                distance <- breadthFirstSearch(sourceId, distId, maxDepth)
+                result <- WikiResult.successful(sourceTitle, distTitle, distance)
+              yield
+                result
         }
     }
 end Wikigraph
