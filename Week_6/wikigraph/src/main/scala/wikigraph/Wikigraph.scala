@@ -84,8 +84,26 @@ final class Wikigraph(client: Wikipedia):
       *       including the failed node. Refer to the documentation of [[wikigraph.WikiResult#fallbackTo]].
       */
     def iter(visited: Set[ArticleId], q: Queue[(Int, ArticleId)]): WikiResult[Option[Int]] =
-      ???
+      if q.isEmpty then
+        WikiResult.successful(None)
+      else
+        val ((currentDepth, currentArticle), remainingQueue) = q.dequeue
+        if currentDepth >= maxDepth then
+          WikiResult.successful(None)
+        else
+          client.linksFrom(currentArticle).flatMap(articleIds =>
+            if articleIds.contains(target) then
+              WikiResult.successful(Some(currentDepth))
+            else
+              iter(
+                visited + currentArticle,
+                remainingQueue.enqueueAll(
+                    articleIds.diff(visited)
+                      .map(articleId => (currentDepth + 1, articleId)))
+              )
+          ).fallbackTo(iter(visited + currentArticle, remainingQueue))
     end iter
+
     if start == target then
       // The start node is the one we are looking for: the search succeeds with
       // a distance of 0.
